@@ -40,6 +40,7 @@ namespace adbroot {
 using ::android::AutoMutex;
 using ::android::base::ReadFileToString;
 using ::android::base::SetProperty;
+using ::android::base::GetProperty;
 using ::android::base::Trim;
 using ::android::base::WriteStringToFile;
 
@@ -67,7 +68,7 @@ ndk::ScopedAStatus ADBRootService::isSupported(bool* _aidl_return) {
     }
 
     AutoMutex _l(lock_);
-    *_aidl_return = __android_log_is_debuggable();
+    *_aidl_return = GetProperty("ro.debuggablr", "0") == "1";
     return ndk::ScopedAStatus::ok();
 }
 

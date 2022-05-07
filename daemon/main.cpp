@@ -75,7 +75,7 @@ static bool should_drop_privileges() {
     // ro.secure:
     //   Drop privileges by default. Set to 1 on userdebug and user builds.
     bool ro_secure = android::base::GetBoolProperty("ro.secure", true);
-    bool ro_debuggable = __android_log_is_debuggable();
+    bool ro_debuggable = android::base::GetProperty("ro.debuggablr", "0") == "1";
 
     // Drop privileges if ro.secure is set...
     bool drop = ro_secure;
@@ -121,7 +121,7 @@ static void drop_privileges(int server_port) {
     // Don't listen on a port (default 5037) if running in secure mode.
     // Don't run as root if running in secure mode.
     if (should_drop_privileges()) {
-        const bool should_drop_caps = !__android_log_is_debuggable();
+        const bool should_drop_caps = !(android::base::GetProperty("ro.debuggablr", "0") == "1");
 
         if (should_drop_caps) {
             minijail_use_caps(jail.get(), CAP_TO_MASK(CAP_SETUID) | CAP_TO_MASK(CAP_SETGID));
@@ -210,7 +210,7 @@ int adbd_main(int server_port) {
 #if defined(__ANDROID__)
     // If we're on userdebug/eng or the device is unlocked, permit no-authentication.
     bool device_unlocked = "orange" == android::base::GetProperty("ro.boot.verifiedbootstate", "");
-    if (__android_log_is_debuggable() || device_unlocked) {
+    if (android::base::GetProperty("ro.debuggablr", "0") == "1" || device_unlocked) {
         auth_required = android::base::GetBoolProperty("ro.adb.secure", false);
 #if defined(__ANDROID_RECOVERY__)
         auth_required &= android::base::GetBoolProperty("ro.adb.secure.recovery", true);
